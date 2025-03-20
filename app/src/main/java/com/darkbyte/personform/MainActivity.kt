@@ -33,12 +33,15 @@ class MainActivity : ComponentActivity() {
         var edad by remember { mutableStateOf("") }
         var telefono by remember { mutableStateOf("") }
         var ciudad by remember { mutableStateOf("") }
+
+        // Use a state to store the list of personas
         val personas = remember { mutableStateListOf<Persona>() }
         val scope = rememberCoroutineScope()
 
         // Cargar personas al iniciar la app
         LaunchedEffect(Unit) {
             scope.launch {
+                // Make sure the list is cleared first before reloading data
                 personas.clear()
                 personas.addAll(db.personaDao().getAll())
             }
@@ -55,8 +58,10 @@ class MainActivity : ComponentActivity() {
 
             scope.launch {
                 db.personaDao().insertar(persona)
+                // Update the list after insertion
                 personas.clear()
                 personas.addAll(db.personaDao().getAll())
+                // Clear input fields
                 nombre = ""
                 edad = ""
                 telefono = ""
@@ -80,6 +85,7 @@ class MainActivity : ComponentActivity() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Form fields for entering new person data
             TextField(
                 value = nombre,
                 onValueChange = { nombre = it },
@@ -126,6 +132,8 @@ class MainActivity : ComponentActivity() {
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
+
+            // Displaying the list of registered people in a LazyColumn
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 items(items = personas) { persona ->
                     Text(
@@ -135,8 +143,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
     }
+
     @Preview(showBackground = true, showSystemUi = true)
     @Composable
     fun DefaultPreview() {

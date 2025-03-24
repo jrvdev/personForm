@@ -9,14 +9,15 @@ import com.darkbyte.personform.db.dao.PersonaDao
 
 /**
  * Clase que representa la base de datos Room.
- *
- * Contiene la definición de la entidad Persona y expone el DAO correspondiente.
+ * Define la base de datos de la aplicación, incluyendo la entidad `Persona` y el DAO correspondiente.
+ * Utiliza Room para gestionar la creación, actualización y acceso a la base de datos.
  */
 @Database(entities = [Persona::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
 
     /**
-     * Provee el acceso a las operaciones definidas en el DAO de Persona.
+     * Provee el acceso a las operaciones definidas en el DAO de `Persona`.
+     * @return Una instancia del DAO para interactuar con la entidad `Persona`.
      */
     abstract fun personaDao(): PersonaDao
 
@@ -25,16 +26,17 @@ abstract class AppDatabase : RoomDatabase() {
         private var INSTANCE: AppDatabase? = null
 
         /**
-         * Método para obtener la instancia única de la base de datos.
-         *
-         * Se utiliza el patrón Singleton para asegurarnos de que solo haya una instancia.
+         * Metodo para obtener la instancia unica de la base de datos.
+         * Utiliza el patrón Singleton para asegurarse de que solo haya una instancia de la base de datos
+         * en toda la aplicación. La base de datos es construida solo si no existe una instancia previa.
          */
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
+                // Construir la base de datos si no existe una instancia previa
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "personas_database"
+                    "personas_database"  // Nombre del archivo de la base de datos
                 ).build()
                 INSTANCE = instance
                 instance

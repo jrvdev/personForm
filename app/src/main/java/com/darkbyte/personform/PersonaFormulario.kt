@@ -1,11 +1,6 @@
 package com.darkbyte.personform
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -26,25 +21,41 @@ import androidx.compose.ui.unit.sp
 import com.darkbyte.personform.db.entity.Persona
 
 /**
- * Composable que representa el formulario para registrar personas.
+ * Composable que representa el formulario para registrar y editar personas.
+ * Se conecta con el ViewModel para guardar, editar y eliminar personas en la base de datos.
+ * También soporta un modo de previsualización con datos ficticios.
  *
- * Recibe un PersonaViewModel para interactuar con la base de datos y actualizar la UI.
+ * @param personaViewModel ViewModel que gestiona las operaciones con la base de datos.
+ * @param previewPersonas Lista de personas ficticias utilizadas para la vista previa en
+ * caso de que el ViewModel sea nulo.
  */
 @Composable
-fun PersonaFormulario(personaViewModel: PersonaViewModel? = null, previewPersonas: List<Persona> = emptyList()) {
+fun PersonaFormulario(
+    personaViewModel: PersonaViewModel? = null,
+    previewPersonas: List<Persona> = emptyList()) {
+
+    // Estado de los campos de texto del formulario
     var nombre by remember { mutableStateOf("") }
     var edad by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
     var ciudad by remember { mutableStateOf("") }
     var editingPersona by remember { mutableStateOf<Persona?>(null) }
 
+    // Mensaje de confirmación de la accion
     var showMessage by remember { mutableStateOf("") }
+
+    // Obtencion de la lista de personas desde el ViewModel o desde datos ficticios
+    // (para previsualización)
     val personas = personaViewModel?.personas?.collectAsState()?.value ?: previewPersonas
 
+    /**
+     * Funcion que maneja la lógica de guardar o actualizar una persona
+     * dependiendo de si se esta editando.
+     */
     fun guardarOActualizarPersona() {
         if (personaViewModel != null) {
             if (editingPersona == null) {
-                // Guardar nueva persona
+                // Crear una nueva persona y guardarla
                 val persona = Persona(
                     nombre = nombre,
                     edad = edad.toIntOrNull() ?: 0,
@@ -54,7 +65,7 @@ fun PersonaFormulario(personaViewModel: PersonaViewModel? = null, previewPersona
                 personaViewModel.guardarPersona(persona)
                 showMessage = "Persona guardada correctamente."
             } else {
-                // Actualizar persona existente
+                // Actualizar una persona existente
                 val personaEditada = editingPersona!!.copy(
                     nombre = nombre,
                     edad = edad.toIntOrNull() ?: 0,
@@ -65,6 +76,7 @@ fun PersonaFormulario(personaViewModel: PersonaViewModel? = null, previewPersona
                 showMessage = "Persona actualizada correctamente."
                 editingPersona = null
             }
+            // Restablecer los campos del formulario
             nombre = ""
             edad = ""
             telefono = ""
@@ -72,21 +84,23 @@ fun PersonaFormulario(personaViewModel: PersonaViewModel? = null, previewPersona
         }
     }
 
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Título principal del formulario
         Text(
-            text = if (editingPersona == null) "Registro de Personas" else "Editar Persona",
+            text = if (editingPersona == null) "Registro de Personas"
+            else "Editar Persona",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Campos de entrada para los datos de la persona
         TextField(value = nombre,
             onValueChange = { nombre = it },
             label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth())
@@ -97,23 +111,23 @@ fun PersonaFormulario(personaViewModel: PersonaViewModel? = null, previewPersona
             label = { Text("Edad") }, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(8.dp))
 
-
         TextField(value = telefono,
             onValueChange = { telefono = it },
-            label = { Text("Telefono") }, modifier = Modifier.fillMaxWidth())
+            label = { Text("Teléfono") }, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(8.dp))
-
 
         TextField(value = ciudad,
             onValueChange = { ciudad = it },
             label = { Text("Ciudad") }, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Botón para guardar o actualizar la persona
         Button(onClick = { guardarOActualizarPersona() },
             modifier = Modifier.fillMaxWidth()) {
             Text(if (editingPersona == null) "Guardar" else "Actualizar")
         }
 
+        // Mostrar mensaje de confirmación
         if (showMessage.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(showMessage)
@@ -121,13 +135,14 @@ fun PersonaFormulario(personaViewModel: PersonaViewModel? = null, previewPersona
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        LazyColumn(modifier = Modifier
-            .fillMaxWidth()) {
+        // Lista de personas
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
             items(personas) { persona ->
                 PersonaItem(
                     persona = persona,
                     onDelete = { personaViewModel?.eliminarPersona(persona) },
                     onEdit = {
+                        // Al hacer clic en editar, se cargan los datos de la persona para editar
                         editingPersona = persona
                         nombre = persona.nombre
                         edad = persona.edad.toString()
@@ -140,9 +155,9 @@ fun PersonaFormulario(personaViewModel: PersonaViewModel? = null, previewPersona
     }
 }
 
-
-
-
+/**
+ * Vista previa de la pantalla de formulario con datos ficticios.
+ */
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun PreviewPersonaFormulario() {
@@ -153,9 +168,9 @@ fun PreviewPersonaFormulario() {
         Persona(3, "Pedro", 40, "555555555", "Sevilla")
     )
 
+    // Llamada al formulario con personas ficticias
     PersonaFormulario(
-        personaViewModel = null,
+        personaViewModel = null,  // En la vista previa no se necesita el ViewModel
         previewPersonas = examplePersonas
     )
 }
-

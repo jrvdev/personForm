@@ -66,4 +66,17 @@ dependencies {
     implementation("androidx.room:room-ktx:$room_version")
 
 
+    // ViewModel
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+    // Compose ViewModel support
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+
+    // LiveData (si no lo tienes)
+    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
+
+    // Compose ViewModel Support (para usar viewModel() y observeAsState())
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+
+
+
 }
